@@ -146,27 +146,144 @@
 @endsection
 @push('styles')
 <style>
-.faq-eyebrow{display:inline-block;background:rgba(201,169,110,.12);border:1px solid rgba(201,169,110,.25);color:#c9a96e;font-size:.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:5px 16px;border-radius:50px;margin-bottom:14px}
-.faq-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:#f0ece4;margin-bottom:10px}
-.faq-sub{font-size:.88rem;color:rgba(240,236,228,.4);max-width:500px;margin:0 auto}
-.pol-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
-@media(max-width:640px){.pol-grid{grid-template-columns:1fr}}
-.pol-card{background:#151515;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;transition:border-color .2s}
-.pol-card:hover{border-color:rgba(201,169,110,.2)}
-.pol-card-icon{width:48px;height:48px;border-radius:12px;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:16px}
-.pol-card-title{font-size:.95rem;font-weight:600;color:#f0ece4;margin-bottom:12px}
-.pol-card-body{font-size:.82rem;color:rgba(240,236,228,.55);line-height:1.75}
-.pol-card-body p{margin-bottom:8px}
-.pol-card-body p:last-child{margin-bottom:0}
-.pol-card-body ul,.pol-card-body ol{padding-left:0;list-style:none;margin-bottom:10px}
-.pol-card-body li{padding:3px 0;color:rgba(240,236,228,.55)}
-.pol-card-body strong{color:#f0ece4}
-.pol-disclaimer{display:flex;align-items:flex-start;gap:14px;background:rgba(201,169,110,.05);border:1px solid rgba(201,169,110,.15);border-radius:12px;padding:18px 20px;margin-bottom:16px}
-.faq-contact{text-align:center;background:rgba(201,169,110,.05);border:1px solid rgba(201,169,110,.15);border-radius:16px;padding:40px 24px}
-.faq-contact-icon{font-size:2.5rem;margin-bottom:14px}
-.faq-contact-title{font-size:1.1rem;font-weight:600;color:#f0ece4;margin-bottom:8px}
-.faq-contact-sub{font-size:.85rem;color:rgba(240,236,228,.4);margin-bottom:20px}
-.faq-wa-btn{display:inline-flex;align-items:center;background:#25d366;border:none;border-radius:10px;padding:12px 24px;font-size:.9rem;font-weight:600;color:white;text-decoration:none;transition:background .2s}
-.faq-wa-btn:hover{background:#1da851;color:white}
+/* ── HEADER ── */
+.faq-eyebrow {
+    display: inline-block;
+    background: rgba(59,111,232,.1);
+    border: 1px solid rgba(59,111,232,.25);
+    color: #3b6fe8;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 50px;
+    margin-bottom: 14px;
+}
+.faq-title {
+    font-family: 'Merriweather', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f2044;
+    margin-bottom: 10px;
+}
+.faq-sub {
+    font-size: .88rem;
+    color: #64748b;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ── POLICY GRID ── */
+.pol-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+@media(max-width:640px) { .pol-grid { grid-template-columns: 1fr; } }
+
+/* ── POLICY CARD ── */
+.pol-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color .2s, box-shadow .2s;
+}
+.pol-card:hover {
+    border-color: #3b6fe8;
+    box-shadow: 0 4px 16px rgba(59,111,232,.08);
+}
+.pol-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+}
+.pol-card-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: #0f2044;
+    margin-bottom: 12px;
+}
+.pol-card-body {
+    font-size: .83rem;
+    color: #475569;
+    line-height: 1.8;
+}
+.pol-card-body p { margin-bottom: 8px; }
+.pol-card-body p:last-child { margin-bottom: 0; }
+.pol-card-body ul,
+.pol-card-body ol {
+    padding-left: 0;
+    list-style: none;
+    margin-bottom: 10px;
+}
+.pol-card-body li {
+    padding: 3px 0;
+    color: #475569;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+.pol-card-body strong { color: #0f2044; font-weight: 600; }
+
+/* ── DISCLAIMER ── */
+.pol-disclaimer {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+}
+.pol-disclaimer-text {
+    font-size: .83rem;
+    color: #92400e;
+    line-height: 1.7;
+}
+
+/* ── CONTACT BOX ── */
+.faq-contact {
+    text-align: center;
+    background: #f0f7ff;
+    border: 1.5px solid rgba(59,111,232,.2);
+    border-radius: 16px;
+    padding: 40px 24px;
+}
+.faq-contact-icon { font-size: 2.5rem; margin-bottom: 14px; }
+.faq-contact-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f2044;
+    margin-bottom: 8px;
+}
+.faq-contact-sub {
+    font-size: .85rem;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+.faq-wa-btn {
+    display: inline-flex;
+    align-items: center;
+    background: #25d366;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: .9rem;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    transition: background .2s;
+}
+.faq-wa-btn:hover { background: #1da851; color: white; }
 </style>
 @endpush
