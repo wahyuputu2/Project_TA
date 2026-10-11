@@ -57,6 +57,9 @@
         <a href="{{ route('seller.finance') }}" class="sl-link {{ request()->routeIs('seller.finance') ? 'active' : '' }}">
             <i class="bi bi-cash-stack"></i> Keuangan
         </a>
+        <a href="{{ route('seller.reviews.index') }}" class="sl-link {{ request()->routeIs('seller.reviews*') ? 'active' : '' }}">
+            <i class="bi bi-star-half"></i> Ulasan
+        </a>
         <div class="sl-section-lbl">Toko</div>
         <a href="{{ route('seller.profile.edit') }}" class="sl-link {{ request()->routeIs('seller.profile*') ? 'active' : '' }}">
             <i class="bi bi-shop"></i> Profil Toko

@@ -69,7 +69,7 @@
                 @if($product->isAvailable())
                     <span class="badge bg-success fs-6 px-3 py-2"><i class="bi bi-check-circle me-1"></i>Tersedia</span>
                 @elseif($product->isLocked())
-                    <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="bi bi-lock me-1"></i>Sedang Dipesan (Tersimpan di Keranjang)</span>
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="bi bi-lock-fill me-1"></i>Sedang Dipesan (Stok Dikunci)</span>
                 @else
                     <span class="badge bg-danger fs-6 px-3 py-2"><i class="bi bi-x-circle me-1"></i>Sudah Terjual</span>
                 @endif
@@ -128,10 +128,16 @@
                     </button>
                 </form>
                 <p class="text-muted small text-center"><i class="bi bi-clock me-1"></i>Barang terkunci 15 menit saat masuk keranjang</p>
-            @else
-                <button class="btn btn-secondary btn-lg w-100" disabled>
-                    {{ $product->isSold() ? 'Sudah Terjual' : 'Sedang Dipesan' }}
+            @elseif($product->isLocked())
+                <button type="button" class="btn btn-secondary btn-lg w-100 mb-2" disabled>
+                    <i class="bi bi-lock-fill me-2"></i>Sedang Dipesan (Stok Dikunci)
                 </button>
+                <p class="text-warning-emphasis small text-center"><i class="bi bi-hourglass-split me-1"></i>Produk sedang dalam proses transaksi pembeli lain.</p>
+            @else
+                <button type="button" class="btn btn-secondary btn-lg w-100 mb-2" disabled>
+                    <i class="bi bi-x-circle me-2"></i>Sudah Terjual
+                </button>
+                <p class="text-muted small text-center">Produk ini sudah laku terjual.</p>
             @endif
 
             <a href="https://wa.me/{{ config('services.whatsapp.number') }}?text=Halo, saya ingin tanya tentang produk: {{ $product->name }}"

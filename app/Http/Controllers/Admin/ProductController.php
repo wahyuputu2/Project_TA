@@ -4,135 +4,66 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\Category;
-use App\Models\Brand;
 use App\Models\Store;
-use App\Models\ProductImage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    /**
+     * Tampilkan daftar seluruh produk dari semua toko untuk pemantauan Admin.
+     * Mendukung pencarian nama, filter status (available, locked, sold), dan filter toko.
+     */
     public function index(Request $request)
     {
-        // Admin melihat SEMUA produk dari semua toko
-        $products = Product::with(['category','brand','images','store'])
-            ->when($request->search, fn($q) => $q->where('name','like','%'.$request->search.'%'))
-            ->when($request->status, fn($q) => $q->where('status',$request->status))
-            ->when($request->store_id, fn($q) => $q->where('store_id',$request->store_id))
+        $products = Product::with(['category', 'brand', 'images', 'store'])
+            ->when($request->search, fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->store_id, fn($q) => $q->where('store_id', $request->store_id))
             ->latest()
             ->paginate(20);
 
-        $stores = Store::where('status','active')->get(['id','name']);
+        $stores = Store::where('status', 'active')->orderBy('name')->get(['id', 'name']);
 
-        return view('admin.products.index', compact('products','stores'));
+        return view('admin.products.index', compact('products', 'stores'));
     }
 
+    /**
+     * Tampilkan detail produk secara lengkap untuk pemantauan Admin.
+     * Termasuk foto, informasi produk, stok/status, kondisi, dan informasi seller.
+     */
+    public function show(Product $product)
+    {
+        $product->load(['category', 'brand', 'images', 'store.user', 'reviews.user']);
+
+        return view('admin.products.show', compact('product'));
+    }
+
+    /**
+     * Pengelolaan produk biasa (tambah, edit, hapus) bukan wewenang Admin,
+     * melainkan kewenangan masing-masing Seller.
+     */
     public function create()
     {
-        $categories = Category::all();
-        $brands     = Brand::all();
-        $stores     = Store::where('status','active')->get();
-        return view('admin.products.create', compact('categories','brands','stores'));
+        abort(403, 'Admin tidak memiliki hak akses untuk menambah produk.');
     }
 
-    public function store(Request $request)
+    public function store()
     {
-        $data = $request->validate([
-            'name'            => 'required|string|max:255',
-            'description'     => 'required|string',
-            'condition_notes' => 'nullable|string',
-            'price'           => 'required|numeric|min:0',
-            'category_id'     => 'required|exists:categories,id',
-            'brand_id'        => 'nullable|exists:brands,id',
-            'store_id'        => 'nullable|exists:stores,id',
-            'size'            => 'nullable|string',
-            'condition'       => 'required|in:like_new,9/10,8/10,7/10,6/10',
-            'length_cm'       => 'nullable|numeric',
-            'width_cm'        => 'nullable|numeric',
-            'weight_gram'     => 'required|numeric|min:1',
-            'gender'          => 'required|in:pria,wanita,unisex',
-            'images.*'        => 'nullable|image|max:5120',
-            'image_angles.*'  => 'nullable|string',
-        ]);
-
-        $product = Product::create($data);
-
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $i => $file) {
-                $path  = $file->store('products', 'public');
-                $angle = $request->image_angles[$i] ?? 'other';
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $path,
-                    'angle'      => $angle,
-                    'sort_order' => $i,
-                ]);
-            }
-        }
-
-        return redirect()->route('admin.products.index')
-            ->with('success','Produk berhasil ditambahkan!');
+        abort(403, 'Admin tidak memiliki hak akses untuk menambah produk.');
     }
 
-    public function edit(Product $product)
+    public function edit()
     {
-        $categories = Category::all();
-        $brands     = Brand::all();
-        $stores     = Store::where('status','active')->get();
-        $product->load('images');
-        return view('admin.products.edit', compact('product','categories','brands','stores'));
+        abort(403, 'Admin tidak memiliki hak akses untuk mengedit produk seller.');
     }
 
-    public function update(Request $request, Product $product)
+    public function update()
     {
-        $data = $request->validate([
-            'name'            => 'required|string|max:255',
-            'description'     => 'required|string',
-            'condition_notes' => 'nullable|string',
-            'price'           => 'required|numeric|min:0',
-            'category_id'     => 'required|exists:categories,id',
-            'brand_id'        => 'nullable|exists:brands,id',
-            'store_id'        => 'nullable|exists:stores,id',
-            'size'            => 'nullable|string',
-            'condition'       => 'required',
-            'length_cm'       => 'nullable|numeric',
-            'width_cm'        => 'nullable|numeric',
-            'weight_gram'     => 'required|numeric',
-            'gender'          => 'required',
-        ]);
-
-        $product->update($data);
-
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $i => $file) {
-                $path  = $file->store('products', 'public');
-                $angle = $request->image_angles[$i] ?? 'other';
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $path,
-                    'angle'      => $angle,
-                    'sort_order' => $product->images()->count() + $i,
-                ]);
-            }
-        }
-
-        return redirect()->route('admin.products.index')
-            ->with('success','Produk berhasil diperbarui!');
+        abort(403, 'Admin tidak memiliki hak akses untuk memperbarui produk seller.');
     }
 
-    public function destroy(Product $product)
+    public function destroy()
     {
-        $product->images->each(fn($img) => Storage::disk('public')->delete($img->image_path));
-        $product->delete();
-        return redirect()->route('admin.products.index')
-            ->with('success','Produk dihapus.');
-    }
-
-    public function deleteImage(ProductImage $image)
-    {
-        Storage::disk('public')->delete($image->image_path);
-        $image->delete();
-        return response()->json(['success' => true]);
+        abort(403, 'Admin tidak memiliki hak akses untuk menghapus produk seller.');
     }
 }

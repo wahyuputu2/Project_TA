@@ -12,7 +12,7 @@
 
     @stack('styles')
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
 @php
     $cartCount = app(\App\Services\CartService::class)->count();
@@ -123,13 +123,47 @@
                         </ul>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="navbar-icon-btn" title="Masuk">
-                        <i class="bi bi-person"></i>
-                    </a>
-                    <a href="{{ route('register') }}" class="navbar-icon-btn" title="Daftar"
-                        style="position:relative">
-                        <i class="bi bi-person-plus"></i>
-                     </a>
+                    {{-- Guest dropdown: Login & Register --}}
+                    <div class="dropdown" id="guestDropdown">
+                        <button class="navbar-icon-btn dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false" title="Akun" id="guestDropdownBtn">
+                            <i class="bi bi-person"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow guest-dropdown-menu"
+                            aria-labelledby="guestDropdownBtn">
+                            {{-- Header --}}
+                            <li class="px-3 py-2 border-bottom guest-dd-header">
+                                <div class="fw-bold small" style="color:#0f2044;">Selamat Datang! 👋</div>
+                                <div style="font-size:0.72rem;color:#64748b;margin-top:2px;">
+                                    Masuk atau daftar untuk mulai belanja
+                                </div>
+                            </li>
+                            {{-- Login --}}
+                            <li>
+                                <a class="dropdown-item guest-dd-item" href="{{ route('login') }}">
+                                    <span class="guest-dd-icon" style="background:rgba(59,111,232,.1);color:#3b6fe8;">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                    </span>
+                                    <span>
+                                        <span class="d-block fw-semibold" style="font-size:.85rem;color:#0f2044;">Masuk</span>
+                                        <span style="font-size:.72rem;color:#94a3b8;">Sudah punya akun?</span>
+                                    </span>
+                                </a>
+                            </li>
+                            {{-- Register --}}
+                            <li>
+                                <a class="dropdown-item guest-dd-item" href="{{ route('register') }}">
+                                    <span class="guest-dd-icon" style="background:rgba(74,222,128,.1);color:#22c55e;">
+                                        <i class="bi bi-person-plus-fill"></i>
+                                    </span>
+                                    <span>
+                                        <span class="d-block fw-semibold" style="font-size:.85rem;color:#0f2044;">Daftar</span>
+                                        <span style="font-size:.72rem;color:#94a3b8;">Buat akun gratis</span>
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 @endauth
 
                 <!-- Wishlist (Dummy) -->
@@ -206,12 +240,12 @@
 </div>
 @endif
 
-<main>
+<main class="flex-grow-1">
     @yield('content')
 </main>
 
 {{-- FOOTER --}}
-<footer class="py-5 mt-5">
+<footer class="py-5 mt-auto">
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-3">

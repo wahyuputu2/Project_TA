@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Commission;
 use App\Models\Order;
 use App\Models\PaymentLog;
 use Midtrans\Config;
@@ -127,9 +128,11 @@ private function calculateCommission(Order $order): void
             'settled_at'  => now(),
         ]);
 
-    // Tambah saldo seller
-    $commission->store->addBalance($commission->seller_amount);
-    $commission->store->increment('total_sales');
+        // Tambah saldo seller
+        if ($commission->store) {
+            $commission->store->addBalance($commission->seller_amount);
+            $commission->store->increment('total_sales');
+        }
     }
 
 }

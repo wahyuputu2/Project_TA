@@ -77,7 +77,15 @@
                     <div class="pcard-no-img"><i class="bi bi-image"></i></div>
                 @endif
                 @if($product->isSold())
-                    <div class="pcard-sold-overlay"><span class="pcard-sold-tag">Terjual</span></div>
+                    <a href="{{ route('catalog.show', $product->slug) }}" class="pcard-sold-overlay" style="text-decoration:none">
+                        <span class="pcard-sold-tag">TERJUAL</span>
+                        <span class="pcard-sold-detail-hint">Lihat Detail</span>
+                    </a>
+                @elseif($product->isLocked())
+                    <a href="{{ route('catalog.show', $product->slug) }}" class="pcard-locked-overlay" style="text-decoration:none">
+                        <span class="pcard-locked-tag"><i class="bi bi-lock-fill me-1"></i>Sedang Dipesan</span>
+                        <span class="pcard-sold-detail-hint">Lihat Detail</span>
+                    </a>
                 @else
                     <div class="pcard-overlay">
                         <a href="{{ route('catalog.show', $product->slug) }}" class="btn-card-detail">Lihat Detail</a>
@@ -91,7 +99,13 @@
                 <div class="pcard-meta">Size {{ $product->size ?? '-' }}</div>
                 <div class="pcard-foot">
                     <div class="pcard-price">Rp {{ number_format($product->price,0,',','.') }}</div>
-                    <a href="{{ route('catalog.show', $product->slug) }}" class="pcard-btn">Detail →</a>
+                    @if($product->isSold())
+                        <a href="{{ route('catalog.show', $product->slug) }}" class="pcard-btn" style="opacity:.65">Detail →</a>
+                    @elseif($product->isLocked())
+                        <a href="{{ route('catalog.show', $product->slug) }}" class="pcard-btn" style="opacity:.75">Detail →</a>
+                    @else
+                        <a href="{{ route('catalog.show', $product->slug) }}" class="pcard-btn">Detail →</a>
+                    @endif
                 </div>
             </div>
         </div>

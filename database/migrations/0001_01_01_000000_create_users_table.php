@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             // ↓ Tambahkan kolom ini
-            $table->enum('role', ['admin', 'customer'])->default('customer');
+            $table->enum('role', ['superadmin', 'admin', 'seller', 'customer'])->default('customer');
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
             $table->string('city')->nullable();

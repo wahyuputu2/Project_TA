@@ -29,6 +29,13 @@ body {
     font-size: 15px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex-grow: 1;
 }
 
 ::-webkit-scrollbar { width: 5px; }
@@ -460,12 +467,18 @@ body {
     position: absolute;
     inset: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     z-index: 2;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 .pcard-sold-overlay { background: rgba(255, 255, 255, 0.7); }
+.pcard-sold-overlay:hover { background: rgba(255, 255, 255, 0.82); }
 .pcard-locked-overlay { background: rgba(255, 255, 255, 0.6); }
+.pcard-locked-overlay:hover { background: rgba(255, 255, 255, 0.78); }
 .pcard-sold-tag {
     background: var(--primary);
     color: white;
@@ -481,6 +494,24 @@ body {
     font-weight: 700;
     padding: 6px 14px;
     letter-spacing: 1px;
+}
+.pcard-sold-detail-hint {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: rgba(255,255,255,0.9);
+    border: 1px solid var(--primary);
+    border-radius: 20px;
+    padding: 3px 12px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s, transform 0.2s;
+    text-decoration: none;
+}
+.pcard-sold-overlay:hover .pcard-sold-detail-hint,
+.pcard-locked-overlay:hover .pcard-sold-detail-hint {
+    opacity: 1;
+    transform: translateY(0);
 }
 .pcard-body {
     padding: 12px 0;
@@ -741,7 +772,7 @@ body {
 .wa-float a:hover { transform: translateY(-2px); }
 
 /* ── FOOTER ── */
-footer { background: var(--primary) !important; color: rgba(255,255,255,0.7) !important; margin-top: 0 !important; }
+footer { background: var(--primary) !important; color: rgba(255,255,255,0.7) !important; margin-top: auto !important; }
 footer a { color: rgba(255,255,255,0.5) !important; transition: color 0.15s; text-decoration: none !important; }
 footer a:hover { color: white !important; }
 footer hr { border-color: rgba(255,255,255,0.1) !important; }
@@ -763,3 +794,51 @@ footer hr { border-color: rgba(255,255,255,0.1) !important; }
 /* override Bootstrap border-radius */
 .rounded, .rounded-md, .rounded-lg, .card, .btn, .form-control { border-radius: 0px !important; }
 .shadow-sm, .shadow, .shadow-md, .shadow-lg { box-shadow: none !important; }
+
+/* ── GUEST DROPDOWN (Login / Register) ── */
+.guest-dropdown-menu {
+    min-width: 230px !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
+    padding: 4px !important;
+    animation: ddFadeIn .18s ease;
+}
+@keyframes ddFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.guest-dd-header {
+    background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
+    border-radius: 9px 9px 0 0 !important;
+}
+.guest-dd-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    transition: background .15s !important;
+    margin: 2px 4px !important;
+}
+.guest-dd-item:hover {
+    background: #f8faff !important;
+    color: inherit !important;
+}
+.guest-dd-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: transform .15s;
+}
+.guest-dd-item:hover .guest-dd-icon {
+    transform: scale(1.08);
+}
+
+/* hide Bootstrap's default dropdown-toggle arrow on icon buttons */
+.navbar-icon-btn.dropdown-toggle::after { display: none; }

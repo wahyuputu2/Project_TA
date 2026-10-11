@@ -8,7 +8,7 @@
             Manajemen Pesanan
         </h4>
         <p style="font-size:.82rem;color:rgba(240,236,228,.35);margin:0">
-            Kelola & proses semua transaksi masuk
+            Pantau seluruh transaksi &mdash; pengelolaan pesanan dilakukan oleh Seller
         </p>
     </div>
 </div>
@@ -142,7 +142,7 @@
                     <td>
                         <a href="{{ route('admin.orders.show', $order) }}"
                            class="adm-btn-secondary" style="padding:7px 14px;font-size:.78rem">
-                            <i class="bi bi-pencil-square me-1"></i>Kelola
+                            <i class="bi bi-eye me-1"></i>Detail
                         </a>
                     </td>
                 </tr>

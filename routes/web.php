@@ -9,6 +9,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Seller;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // ══════════════════════════════════════
@@ -56,8 +57,26 @@ Route::middleware('auth')->group(function () {
     // Orders
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/pesanan/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/pesanan/{order}/terima', [OrderController::class, 'markAsDelivered'])->name('orders.received');
     Route::post('/pesanan/{order}/ulasan', [OrderController::class, 'storeReview'])->name('orders.review');
     Route::post('/pesanan/{order}/batalkan', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+    // Dashboard redirector berdasarkan role
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        if ($user && in_array($user->role, ['admin', 'superadmin'])) {
+            return redirect()->route('admin.dashboard');
+        }
+        if ($user && $user->role === 'seller') {
+            return redirect()->route('seller.dashboard');
+        }
+        return redirect()->route('home');
+    })->name('dashboard');
+
+    // Profil Pengguna (Customer / User Profile)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Daftar seller
     Route::get('/seller/daftar', [Seller\RegisterController::class, 'create'])->name('seller.register');
@@ -81,6 +100,10 @@ Route::middleware('auth')->group(function () {
         Route::get('keuangan', [Seller\FinanceController::class, 'index'])->name('finance');
         Route::post('withdraw', [Seller\FinanceController::class, 'withdraw'])->name('withdraw');
 
+        // Ulasan Seller
+        Route::get('ulasan', [Seller\ReviewController::class, 'index'])->name('reviews.index');
+        Route::patch('ulasan/{review}/toggle', [Seller\ReviewController::class, 'toggle'])->name('reviews.toggle');
+
         // Profil toko
         Route::get('profil', [Seller\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profil', [Seller\ProfileController::class, 'update'])->name('profile.update');
@@ -94,24 +117,26 @@ Route::middleware('auth')->group(function () {
         // Dashboard
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
-        // Produk
-        Route::resource('products', Admin\ProductController::class);
-        Route::delete('products/images/{image}', [Admin\ProductController::class, 'deleteImage'])
-            ->name('products.image.delete');
+        // Produk — Admin hanya memantau (read-only: index & show)
+        Route::resource('products', Admin\ProductController::class)->only(['index', 'show']);
 
-        // Pesanan
+        // Pesanan — Admin hanya memantau (read-only) & menghapus data bermasalah.
+        // Perubahan status pesanan sepenuhnya menjadi tanggung jawab Seller.
         Route::get('orders', [Admin\OrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{order}', [Admin\OrderController::class, 'show'])->name('orders.show');
-        Route::put('orders/{order}', [Admin\OrderController::class, 'update'])->name('orders.update');
         Route::delete('orders/{order}', [Admin\OrderController::class, 'destroy'])->name('orders.destroy');
 
         // Kategori & Brand
         Route::resource('categories', Admin\CategoryController::class);
         Route::resource('brands', Admin\BrandController::class);
 
-        // Laporan & Ulasan
+        // Laporan
         Route::get('laporan', [Admin\ReportController::class, 'index'])->name('reports');
-        Route::resource('reviews', Admin\ReviewController::class)->only(['index', 'update', 'destroy']);
+
+        // Ulasan
+        Route::get('ulasan', [Admin\ReviewController::class, 'index'])->name('reviews.index');
+        Route::patch('ulasan/{review}', [Admin\ReviewController::class, 'update'])->name('reviews.update');
+        Route::delete('ulasan/{review}', [Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
 
         // Marketplace — Kelola Toko
         Route::get('stores', [Admin\StoreController::class, 'index'])->name('stores.index');

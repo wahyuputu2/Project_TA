@@ -18,16 +18,15 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
+        $oldSessionId = session()->getId();
+
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        // Redirect admin ke panel admin, customer ke home
-        if (Auth::user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
+        app(\App\Services\CartService::class)->migrateGuestCart(Auth::id(), $oldSessionId);
 
-        return redirect()->route('home');
+        return redirect()->intended(route('dashboard'));
     }
 
     public function destroy(Request $request): RedirectResponse

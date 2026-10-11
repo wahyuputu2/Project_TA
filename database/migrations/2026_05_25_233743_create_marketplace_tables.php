@@ -72,7 +72,9 @@ return new class extends Migration {
 
         // Tambah role seller ke users
         // (ALTER enum)
-        \DB::statement("ALTER TABLE users MODIFY role ENUM('superadmin','admin','seller','customer') DEFAULT 'customer'");
+        if (\DB::getDriverName() === 'mysql') {
+            \DB::statement("ALTER TABLE users MODIFY role ENUM('superadmin','admin','seller','customer') DEFAULT 'customer'");
+        }
     }
 
     public function down(): void

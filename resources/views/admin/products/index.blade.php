@@ -10,11 +10,12 @@
         <p style="font-size:.82rem;color:rgba(240,236,228,.35);margin:0">
             Semua produk dari semua toko
         </p>
-   <div style="font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px">
-    <i class="bi bi-info-circle"></i>
-    Produk dikelola oleh masing-masing seller
+        <div style="font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:4px">
+            <i class="bi bi-info-circle"></i>
+            Produk dikelola oleh masing-masing seller
+        </div>
+    </div>
 </div>
-
 {{-- FILTER --}}
 <div class="adm-card mb-4">
     <div class="adm-card-body" style="padding:16px 20px">
@@ -123,25 +124,17 @@
                     </td>
                     <td>
                         <div class="d-flex gap-2">
+                            <a href="{{ route('admin.products.show', $product) }}"
+                               style="background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:7px;padding:6px 12px;color:var(--gold);font-size:.78rem;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px"
+                               title="Lihat Detail Produk">
+                                <i class="bi bi-eye-fill"></i> Detail
+                            </a>
                             <a href="{{ route('catalog.show', $product->slug) }}"
                                target="_blank"
                                style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:6px 10px;color:rgba(240,236,228,.5);font-size:.78rem;text-decoration:none"
-                               title="Preview">
-                                <i class="bi bi-eye"></i>
+                               title="Lihat di Katalog Publik">
+                                <i class="bi bi-box-arrow-up-right"></i>
                             </a>
-                            <a href="{{ route('admin.products.edit', $product) }}"
-                               style="background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.2);border-radius:7px;padding:6px 12px;color:#c9a96e;font-size:.78rem;text-decoration:none"
-                               title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="{{ route('admin.products.destroy', $product) }}" method="POST"
-                                  onsubmit="return confirm('Hapus produk ini?')">
-                                @csrf @method('DELETE')
-                                <button type="submit"
-                                        style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:6px 10px;color:#f87171;cursor:pointer;font-size:.78rem">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
                         </div>
                     </td>
                 </tr>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Commission;
 use App\Models\PaymentLog;
 use Illuminate\Http\Request;
@@ -26,7 +27,18 @@ class PaymentController extends Controller
             $transactionId     = $notification->transaction_id;
             $paymentType       = $notification->payment_type;
             $fraudStatus       = $notification->fraud_status;
-            $grossAmount       = $notification->gross_amount;
+            $statusCode        = $notification->status_code;
+            $signatureKey      = $notification->signature_key;
+
+            // Verifikasi signature key jika server_key terisi
+            $serverKey = config('services.midtrans.server_key');
+            if (!empty($serverKey) && !empty($signatureKey)) {
+                $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+                if ($signatureKey !== $expectedSignature) {
+                    Log::warning("Webhook Error: Signature key mismatch for order {$orderId}");
+                    return response()->json(['status' => 'invalid_signature'], 403);
+                }
+            }
 
             Log::info("Webhook: order={$orderId} status={$transactionStatus}");
 
@@ -65,27 +77,58 @@ class PaymentController extends Controller
 
     private function markAsPaid(Order $order, string $paymentType): void
     {
-        if ($order->status !== 'pending_payment') return;
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $paymentType) {
+            $freshOrder = Order::where('id', $order->id)->lockForUpdate()->first();
+            if (!$freshOrder || $freshOrder->status !== 'pending_payment') {
+                return;
+            }
 
-        $order->update([
-            'status'         => 'paid',
-            'paid_at'        => now(),
-            'payment_method' => $paymentType,
-        ]);
+            $freshOrder->update([
+                'status'         => 'paid',
+                'paid_at'        => now(),
+                'payment_method' => $paymentType,
+            ]);
 
-        // ✅ Buat komisi otomatis saat order dibayar
-        $this->createCommission($order);
+            // ✅ Langsung mark produk sebagai SOLD saat bayar berhasil
+            $freshOrder->load('items.product');
+            $freshOrder->items->each(function ($item) {
+                if ($item->product_id) {
+                    $product = \App\Models\Product::where('id', $item->product_id)->lockForUpdate()->first();
+                    if ($product) {
+                        $product->markSold();
+                        Log::info("Produk [{$product->name}] ditandai SOLD setelah pembayaran");
+                    }
+                }
+            });
 
-        Log::info("Order {$order->order_number} dibayar via {$paymentType}");
+            // ✅ Buat komisi otomatis
+            $this->createCommission($freshOrder);
+
+            Log::info("Order {$freshOrder->order_number} dibayar via {$paymentType}");
+        });
     }
 
     private function markAsCancelled(Order $order): void
     {
-        if (in_array($order->status, ['delivered','cancelled','refunded'])) return;
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+            $freshOrder = Order::where('id', $order->id)->lockForUpdate()->first();
+            if (!$freshOrder || in_array($freshOrder->status, ['paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'])) {
+                return;
+            }
 
-        $order->load('items.product');
-        $order->items->each(fn($item) => $item->product?->unlock());
-        $order->update(['status' => 'cancelled']);
+            $freshOrder->load('items.product');
+            $freshOrder->items->each(function ($item) {
+                if ($item->product_id) {
+                    $product = \App\Models\Product::where('id', $item->product_id)->lockForUpdate()->first();
+                    if ($product && $product->status === 'locked') {
+                        $product->unlock();
+                    }
+                }
+            });
+
+            $freshOrder->update(['status' => 'cancelled']);
+            Log::info("Order {$freshOrder->order_number} dibatalkan");
+        });
     }
 
     private function createCommission(Order $order): void
@@ -127,12 +170,28 @@ class PaymentController extends Controller
 
         if (!$order) return redirect()->route('orders.index');
 
-        if (in_array($status, ['settlement','capture'])) {
-            $this->markAsPaid($order, $request->payment_type ?? 'unknown');
+        // Jangan sembarang percaya query parameter browser; verifikasi via status order atau Midtrans API
+        if ($order->status === 'paid') {
+            return redirect()->route('checkout.success', $order)
+                ->with('success', 'Pembayaran berhasil dikonfirmasi!');
+        }
+
+        // Cek langsung status transaksi ke Midtrans jika belum 'paid'
+        try {
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$isProduction = config('services.midtrans.is_production');
+            if (!empty(Config::$serverKey)) {
+                $midtransStatus = \Midtrans\Transaction::status($order->order_number);
+                if (in_array($midtransStatus->transaction_status, ['settlement', 'capture'])) {
+                    $this->markAsPaid($order, $midtransStatus->payment_type ?? 'midtrans');
+                }
+            }
+        } catch (\Exception $e) {
+            Log::info("Finish verify check: " . $e->getMessage());
         }
 
         return redirect()->route('checkout.success', $order)
-            ->with('success', 'Pembayaran berhasil!');
+            ->with('success', 'Pembayaran diproses!');
     }
 
     public function unfinish(Request $request)

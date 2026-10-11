@@ -21,9 +21,10 @@ class StoreController extends Controller
     {
         abort_if(!$store->isActive(), 404);
 
+        Product::releaseExpiredLocks();
+
         $products = $store->products()
             ->with(['images', 'brand', 'category'])
-            ->available()
             ->latest()
             ->paginate(12);
 

@@ -18,7 +18,10 @@
             <span style="color:{{ $clr }};font-weight:600">{{ $order->statusLabel() }}</span>
         </p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 align-items-center">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;font-size:.7rem;font-weight:600;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);color:#60a5fa">
+            <i class="bi bi-eye"></i> Mode Pengawasan
+        </span>
         <a href="{{ route('admin.orders.index') }}" class="adm-btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
@@ -109,58 +112,19 @@
             </div>
         </div>
 
-        {{-- UPDATE STATUS --}}
-        @if(!in_array($order->status, ['delivered','cancelled','refunded']))
-        <div class="adm-card mb-4">
-            <div class="adm-card-header">
-                <i class="bi bi-pencil-square"></i> Update Status Pesanan
-            </div>
-            <div class="adm-card-body">
-                <form action="{{ route('admin.orders.update', $order) }}" method="POST" id="statusForm">
-                    @csrf @method('PUT')
-                    <div class="row g-3">
-                        <div class="col-md-5">
-                            <label class="ord-label">Ubah Status</label>
-                            <select name="status" class="adm-select" id="statusSelect" onchange="toggleResi(this.value)">
-                                @php
-                                    $nextStatuses = match($order->status) {
-                                        'pending_payment' => ['paid'=>'✅ Pembayaran Diterima','cancelled'=>'❌ Batalkan'],
-                                        'paid'       => ['processing'=>'📦 Mulai Kemas','cancelled'=>'❌ Batalkan'],
-                                        'processing' => ['shipped'=>'🚚 Tandai Dikirim','cancelled'=>'❌ Batalkan'],
-                                        'shipped'    => ['delivered'=>'✅ Tandai Selesai'],
-                                        default      => [],
-                                    };
-                                @endphp
-                                <option value="">— Pilih Status Baru —</option>
-                                @foreach($nextStatuses as $val => $lbl)
-                                <option value="{{ $val }}">{{ $lbl }}</option>
-                                @endforeach
-                            </select>
-                        </div>
 
-                        <div class="col-md-5" id="resiField" style="display:none">
-                            <label class="ord-label">No. Resi <span style="color:#f87171">*</span></label>
-                            <input type="text" name="tracking_number" class="adm-input"
-                                   placeholder="Contoh: JNE123456789ID"
-                                   value="{{ $order->tracking_number }}" style="padding:9px 14px">
-                        </div>
-
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="adm-btn-primary w-100" style="padding:10px;justify-content:center">
-                                <i class="bi bi-check2"></i> Simpan
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Konfirmasi batalkan --}}
-                    <div id="cancelWarning" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:9px;font-size:.82rem;color:#f87171">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        Membatalkan pesanan akan melepas lock produk dan mengembalikan stok ke <strong>Tersedia</strong>.
-                    </div>
-                </form>
+        {{-- NOTICE: PENGELOLAAN PESANAN OLEH SELLER --}}
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:14px 18px;background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.15);border-radius:10px;margin-bottom:20px">
+            <i class="bi bi-info-circle-fill" style="color:#60a5fa;font-size:1rem;margin-top:2px;flex-shrink:0"></i>
+            <div>
+                <div style="font-size:.82rem;font-weight:600;color:#60a5fa;margin-bottom:3px">Mode Pengawasan — Read Only</div>
+                <div style="font-size:.78rem;color:rgba(240,236,228,.45);line-height:1.6">
+                    Pengelolaan status pesanan, pengiriman, dan proses pemenuhan pesanan
+                    sepenuhnya menjadi tanggung jawab <strong style="color:rgba(240,236,228,.7)">Seller</strong>.
+                    Admin hanya dapat memantau dan menghapus data bermasalah.
+                </div>
             </div>
         </div>
-        @endif
 
         {{-- ITEM PESANAN --}}
         <div class="adm-card mb-4">
@@ -301,51 +265,45 @@
             </div>
         </div>
 
-        {{-- RESI --}}
+        {{-- RESI (read-only) --}}
         <div class="adm-card mb-4">
             <div class="adm-card-header">
                 <i class="bi bi-truck"></i> Nomor Resi
             </div>
             <div class="adm-card-body">
                 @if($order->tracking_number)
-                <div style="background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.2);border-radius:9px;padding:14px;text-align:center;margin-bottom:12px">
+                <div style="background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.2);border-radius:9px;padding:14px;text-align:center">
                     <div style="font-size:.7rem;color:rgba(240,236,228,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Nomor Resi</div>
                     <div style="font-size:1rem;font-weight:700;color:#c9a96e;letter-spacing:1px">{{ $order->tracking_number }}</div>
                     <div style="font-size:.72rem;color:rgba(240,236,228,.3);margin-top:4px">{{ strtoupper($order->courier) }}</div>
                 </div>
+                @else
+                <div style="text-align:center;padding:20px;color:rgba(240,236,228,.25);font-size:.82rem">
+                    <i class="bi bi-truck" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.4"></i>
+                    Belum ada nomor resi
+                </div>
                 @endif
-
-                {{-- Form update resi saja --}}
-                <form action="{{ route('admin.orders.update', $order) }}" method="POST">
-                    @csrf @method('PUT')
-                    <input type="hidden" name="status" value="{{ $order->status }}">
-                    <label class="ord-label">Update No. Resi</label>
-                    <input type="text" name="tracking_number" class="adm-input mb-2"
-                           placeholder="Masukkan nomor resi..." value="{{ $order->tracking_number }}"
-                           style="padding:9px 14px">
-                    <button type="submit" class="adm-btn-primary w-100" style="justify-content:center;padding:10px">
-                        <i class="bi bi-save me-1"></i>Simpan Resi
-                    </button>
-                </form>
+                <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;font-size:.75rem;color:rgba(240,236,228,.3);display:flex;align-items:center;gap:7px">
+                    <i class="bi bi-lock-fill" style="color:rgba(240,236,228,.2)"></i>
+                    Resi diinput oleh Seller saat proses pengiriman
+                </div>
             </div>
         </div>
 
-        {{-- CATATAN --}}
+        {{-- CATATAN (read-only) --}}
         <div class="adm-card">
             <div class="adm-card-header">
                 <i class="bi bi-chat-text"></i> Catatan Pesanan
             </div>
             <div class="adm-card-body">
-                <form action="{{ route('admin.orders.update', $order) }}" method="POST">
-                    @csrf @method('PUT')
-                    <input type="hidden" name="status" value="{{ $order->status }}">
-                    <textarea name="notes" class="adm-input" rows="3"
-                              placeholder="Tambahkan catatan internal..."
-                              style="resize:vertical;padding:10px 14px;font-size:.85rem">{{ $order->notes }}</textarea>
-                    <button type="submit" class="adm-btn-secondary w-100 mt-2" style="justify-content:center;padding:9px">
-                        <i class="bi bi-save me-1"></i>Simpan Catatan
-                    </button>
-                </form>
+                @if($order->notes)
+                <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px;font-size:.85rem;color:rgba(240,236,228,.6);line-height:1.7;white-space:pre-line">{{ $order->notes }}</div>
+                @else
+                <div style="text-align:center;padding:20px;color:rgba(240,236,228,.2);font-size:.8rem">
+                    <i class="bi bi-chat-text" style="font-size:1.2rem;display:block;margin-bottom:6px;opacity:.4"></i>
+                    Tidak ada catatan
+                </div>
+                @endif
             </div>
         </div>
 
@@ -392,12 +350,4 @@
 .ord-info-val { font-size:.85rem;color:#f0ece4;text-align:right }
 </style>
 @endpush
-
-@push('scripts')
-<script>
-function toggleResi(val) {
-    document.getElementById('resiField').style.display    = val === 'shipped' ? 'block' : 'none';
-    document.getElementById('cancelWarning').style.display = val === 'cancelled' ? 'block' : 'none';
-}
-</script>
-@endpush
+

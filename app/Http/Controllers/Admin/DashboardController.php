@@ -7,7 +7,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Store;
-use App\Models\Review;
 use App\Models\Withdrawal;
 
 class DashboardController extends Controller
@@ -36,9 +35,6 @@ class DashboardController extends Controller
         $totalStores   = Store::count();
         $pendingStores = Store::where('status', 'pending')->count();
 
-        // Ulasan
-        $totalReviews   = Review::count();
-        $pendingReviews = Review::where('is_approved', false)->count();
 
         // Withdraw
         $pendingWithdraw      = Withdrawal::where('status', 'pending')->sum('amount');
@@ -63,7 +59,6 @@ class DashboardController extends Controller
             'totalRevenue',
             'totalUsers', 'totalSellers', 'totalCustomers',
             'totalStores', 'pendingStores',
-            'totalReviews', 'pendingReviews',
             'pendingWithdraw', 'pendingWithdrawCount',
             'recentOrders', 'recentStores', 'topProducts'
         ));

@@ -88,16 +88,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="adm-stat" style="--stat-color: var(--gold)">
-            <i class="bi bi-star-fill adm-stat-icon"></i>
-            <div class="adm-stat-label">Ulasan Masuk</div>
-            <div class="adm-stat-value">{{ $totalReviews }}</div>
-            <div class="adm-stat-sub">
-                <span style="color:var(--gold)">{{ $pendingReviews }}</span> menunggu moderasi
-            </div>
-        </div>
-    </div>
+
     <div class="col-xl-3 col-md-6">
         <div class="adm-stat" style="--stat-color: var(--gold)">
             <i class="bi bi-cash-coin adm-stat-icon"></i>
@@ -117,7 +108,7 @@
 </div>
 
 {{-- ACTION NEEDED BANNER --}}
-@if($pendingStores > 0 || $pendingOrders > 0 || $pendingReviews > 0)
+@if($pendingStores > 0 || $pendingOrders > 0)
 <div style="background:var(--gold-dim);border:1px solid var(--gold-bdr);border-left:3px solid var(--gold);padding:16px 20px;margin-bottom:28px;border-radius:var(--radius)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
         <i class="bi bi-bell-fill" style="color:var(--gold);font-size:1rem"></i>
@@ -143,17 +134,6 @@
             <div>
                 <div class="dash-action-title">{{ $pendingOrders }} Pesanan Dibayar</div>
                 <div class="dash-action-sub">Proses pengiriman →</div>
-            </div>
-        </a>
-        @endif
-        @if($pendingReviews > 0)
-        <a href="{{ route('admin.reviews.index', ['status'=>'pending']) }}" class="dash-action-card">
-            <div class="dash-action-icon" style="background:rgba(167,139,250,.12);color:#a78bfa">
-                <i class="bi bi-star-fill"></i>
-            </div>
-            <div>
-                <div class="dash-action-title">{{ $pendingReviews }} Ulasan Pending</div>
-                <div class="dash-action-sub">Moderasi sekarang →</div>
             </div>
         </a>
         @endif

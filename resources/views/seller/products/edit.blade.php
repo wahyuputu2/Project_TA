@@ -4,7 +4,7 @@
 
 <div class="d-flex justify-content-between mb-4">
     <h4 class="fw-bold">✏️ Edit Produk</h4>
-    <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary btn-sm">← Kembali</a>
+    <a href="{{ route('seller.products.index') }}" class="btn btn-outline-secondary btn-sm">← Kembali</a>
 </div>
 
 <form action="{{ route('seller.products.update', $product) }}" method="POST" enctype="multipart/form-data">

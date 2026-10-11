@@ -3,17 +3,19 @@ namespace App\Console\Commands;
 
 use App\Models\Product;
 use App\Models\Cart;
+use App\Models\Order;
 use Illuminate\Console\Command;
 
 class ReleaseCartLocks extends Command
 {
     protected $signature   = 'cart:release-locks';
-    protected $description = 'Release expired cart locks';
+    protected $description = 'Release expired cart locks and cancel expired pending orders';
 
     public function handle(): void
     {
+        Order::cancelExpiredOrders();
         Product::releaseExpiredLocks();
         Cart::where('expires_at', '<', now())->delete();
-        $this->info('Expired locks released.');
+        $this->info('Expired locks and orders released.');
     }
 }

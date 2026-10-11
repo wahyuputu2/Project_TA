@@ -79,6 +79,11 @@ class Product extends Model
     }
 
     public function unlock(): void {
+        // Jangan pernah unlock produk yang sudah berstatus 'sold'
+        if ($this->status !== 'locked') {
+            return;
+        }
+
         $this->update([
             'status'            => 'available',
             'locked_by_session' => null,
@@ -86,7 +91,8 @@ class Product extends Model
         ]);
     }
 
-    public function markSold(): void {
+    public function markSold(): void
+    {
         $this->update([
             'status'            => 'sold',
             'locked_by_session' => null,
@@ -95,13 +101,27 @@ class Product extends Model
     }
 
     public static function releaseExpiredLocks(): void {
-        static::where('status', 'locked')
+        // 1. Batalkan pesanan pending yang sudah melewati batas 15 menit
+        Order::cancelExpiredOrders();
+
+        // 2. Lepaskan lock produk yang terkunci > 15 menit dan tidak berada dalam pesanan pending aktif
+        $expiredLocks = static::where('status', 'locked')
             ->where('locked_at', '<', now()->subMinutes(15))
-            ->update([
-                'status'            => 'available',
-                'locked_by_session' => null,
-                'locked_at'         => null,
-            ]);
+            ->whereDoesntHave('orderItems.order', function ($q) {
+                $q->where('status', 'pending_payment')
+                  ->where(function ($sub) {
+                      $sub->where('expires_at', '>', now())
+                          ->orWhere(function ($s) {
+                              $s->whereNull('expires_at')
+                                ->where('created_at', '>', now()->subMinutes(15));
+                          });
+                  });
+            })
+            ->get();
+
+        foreach ($expiredLocks as $product) {
+            $product->unlock();
+        }
     }
 
     // ── SCOPES ──

@@ -34,13 +34,13 @@
             </div>
             @php
                 $ss = match($order->status) {
-                    'pending_payment' => ['#facc15','rgba(234,179,8,.1)','rgba(234,179,8,.25)'],
-                    'paid'       => ['#60a5fa','rgba(59,130,246,.1)','rgba(59,130,246,.25)'],
-                    'processing' => ['#c9a96e','rgba(201,169,110,.1)','rgba(201,169,110,.25)'],
-                    'shipped'    => ['#a78bfa','rgba(139,92,246,.1)','rgba(139,92,246,.25)'],
-                    'delivered'  => ['#4ade80','rgba(34,197,94,.1)','rgba(34,197,94,.25)'],
-                    'cancelled'  => ['#f87171','rgba(239,68,68,.1)','rgba(239,68,68,.25)'],
-                    default      => ['rgba(240,236,228,.4)','rgba(255,255,255,.05)','rgba(255,255,255,.1)'],
+                    'pending_payment' => ['#d97706','#fffbeb','#fde68a'],
+                    'paid'       => ['#2563eb','#eff6ff','#bfdbfe'],
+                    'processing' => ['#b45309','#fef3c7','#fde68a'],
+                    'shipped'    => ['#7c3aed','#f5f3ff','#ddd6fe'],
+                    'delivered'  => ['#16a34a','#f0fdf4','#bbf7d0'],
+                    'cancelled'  => ['#dc2626','#fef2f2','#fecaca'],
+                    default      => ['#64748b','#f8fafc','#e2e8f0'],
                 };
                 $si = match($order->status) {
                     'pending_payment' => 'bi-clock',
@@ -110,10 +110,10 @@
         @if($order->tracking_number && in_array($order->status, ['shipped','delivered']))
         <div class="ord-resi-bar">
             <div class="ord-resi-info">
-                <i class="bi bi-truck me-2" style="color:#c9a96e"></i>
-                <span style="color:rgba(240,236,228,.5);font-size:.8rem">No. Resi:</span>
-                <span style="color:#c9a96e;font-weight:700;font-size:.88rem;margin-left:6px">{{ $order->tracking_number }}</span>
-                <span style="color:rgba(240,236,228,.3);font-size:.75rem;margin-left:6px">· {{ strtoupper($order->courier) }}</span>
+                <i class="bi bi-truck me-2" style="color:#b45309"></i>
+                <span style="color:#78350f;font-size:.8rem">No. Resi:</span>
+                <span style="color:#92400e;font-weight:700;font-size:.88rem;margin-left:6px">{{ $order->tracking_number }}</span>
+                <span style="color:#78350f;font-size:.75rem;margin-left:6px">· {{ strtoupper($order->courier) }}</span>
             </div>
             <button onclick="copyResi('{{ $order->tracking_number }}')" class="ord-copy-btn">
                 <i class="bi bi-copy me-1"></i>Salin
@@ -121,19 +121,36 @@
         </div>
         @endif
 
-        {{-- Pay alert --}}
-        @if($order->status === 'pending_payment' && $order->payment_url)
-        <div class="ord-pay-alert">
-            <div style="display:flex;align-items:center;gap:10px">
-                <i class="bi bi-exclamation-circle-fill" style="color:#facc15;font-size:1.1rem"></i>
+        {{-- Countdown Timer & Pay alert --}}
+        @if($order->status === 'pending_payment')
+        @php
+            $expiresAt = $order->effective_expires_at;
+        @endphp
+        <div class="ord-pay-alert ord-lock-alert" data-order-id="{{ $order->id }}">
+            <div style="display:flex;align-items:center;gap:12px;flex:1">
+                <div class="ord-timer-badge">
+                    <i class="bi bi-hourglass-split ord-sand-icon"></i>
+                </div>
                 <div>
-                    <div style="font-size:.85rem;font-weight:600;color:#f0ece4">Segera Selesaikan Pembayaran</div>
-                    <div style="font-size:.75rem;color:rgba(240,236,228,.4);margin-top:2px">Pesanan akan otomatis dibatalkan jika tidak dibayar</div>
+                    <div style="font-size:.9rem;font-weight:700;color:#92400e;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <span>Sisa Waktu Pembayaran:</span>
+                        <span class="ord-countdown-timer font-monospace fw-bold"
+                              data-expires="{{ $expiresAt?->toIso8601String() }}">
+                            15:00
+                        </span>
+                    </div>
+                    <div style="font-size:.78rem;color:#a16207;margin-top:2px">
+                        Stok produk dikunci hingga <strong>{{ $expiresAt?->format('H:i') }}</strong> WIB. Selesaikan pembayaran sebelum waktu habis agar stok tidak dilepas kembali.
+                    </div>
                 </div>
             </div>
-            <a href="{{ $order->payment_url }}" target="_blank" class="ord-pay-btn">
-                Bayar Sekarang <i class="bi bi-arrow-right ms-1"></i>
-            </a>
+            <div style="display:flex;gap:8px;align-items:center">
+                @if($order->payment_url)
+                <a href="{{ $order->payment_url }}" target="_blank" class="ord-pay-btn">
+                    <i class="bi bi-credit-card me-1"></i>Bayar Sekarang <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+                @endif
+            </div>
         </div>
         @endif
 
@@ -144,6 +161,13 @@
                 <span class="ord-total-val">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
             </div>
             <div class="ord-actions">
+                @if($order->status === 'shipped')
+                <button type="button" class="ord-btn-receive-sm"
+                        onclick="confirmReceive('{{ $order->order_number }}', '{{ route('orders.received', $order) }}')">
+                    <i class="bi bi-check2-circle me-1"></i>Pesanan Sudah Diterima
+                </button>
+                @endif
+
                 @if($order->status === 'delivered' && !$order->reviews()->where('user_id', Auth::id())->exists())
                 <a href="{{ route('orders.show', $order) }}#review" class="ord-btn-review">
                     <i class="bi bi-star me-1"></i>Beri Ulasan
@@ -204,85 +228,153 @@
     </div>
 </div>
 
+{{-- MODAL KONFIRMASI TERIMA PESANAN --}}
+<div id="receiveModalIndex" class="ord-modal-backdrop" style="display:none">
+    <div class="ord-modal">
+        <div class="ord-modal-icon" style="color:#4ade80">
+            <i class="bi bi-patch-check-fill" style="font-size:2.8rem"></i>
+        </div>
+        <h5 class="ord-modal-title">Konfirmasi Terima Pesanan</h5>
+        <p class="ord-modal-sub" id="receiveModalText"></p>
+        <div class="ord-modal-actions">
+            <button type="button" class="ord-modal-no"
+                    onclick="document.getElementById('receiveModalIndex').style.display='none'">
+                Batal
+            </button>
+            <form id="receiveModalForm" method="POST" style="flex:1">
+                @csrf
+                <button type="submit" class="ord-modal-receive-yes">
+                    <i class="bi bi-check2-circle me-1"></i>Ya, Pesanan Sudah Diterima
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 @push('styles')
 <style>
 .ord-page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-.ord-page-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#f0ece4;margin:0 0 4px}
-.ord-page-sub{font-size:.82rem;color:rgba(240,236,228,.35);margin:0}
-.ord-btn-shop{display:inline-flex;align-items:center;background:rgba(201,169,110,.12);border:1px solid rgba(201,169,110,.25);border-radius:9px;padding:9px 18px;font-size:.85rem;font-weight:500;color:#c9a96e;text-decoration:none;transition:all .2s}
-.ord-btn-shop:hover{background:rgba(201,169,110,.2);color:#c9a96e}
-.ord-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.06)}
-.ord-tab{display:inline-block;padding:7px 16px;border-radius:8px;font-size:.8rem;color:rgba(240,236,228,.4);text-decoration:none;border:1px solid rgba(255,255,255,.07);transition:all .18s;white-space:nowrap}
-.ord-tab:hover{color:#f0ece4;border-color:rgba(255,255,255,.18)}
-.ord-tab.active{background:rgba(201,169,110,.1);border-color:rgba(201,169,110,.3);color:#c9a96e;font-weight:500}
-.ord-card{background:#151515;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:border-color .2s}
-.ord-card:hover{border-color:rgba(201,169,110,.2)}
-.ord-card-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap;gap:8px}
+.ord-page-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:#0f2044;margin:0 0 4px}
+.ord-page-sub{font-size:.88rem;color:#64748b;margin:0}
+.ord-btn-shop{display:inline-flex;align-items:center;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 18px;font-size:.85rem;font-weight:600;color:#0f2044;text-decoration:none;transition:all .2s}
+.ord-btn-shop:hover{background:#0f2044;color:#ffffff;border-color:#0f2044}
+.ord-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;padding-bottom:18px;border-bottom:1.5px solid #e2e8f0}
+.ord-tab{display:inline-block;padding:8px 18px;border-radius:9px;font-size:.84rem;font-weight:500;color:#64748b;background:#f8fafc;text-decoration:none;border:1.5px solid #e2e8f0;transition:all .2s;white-space:nowrap}
+.ord-tab:hover{color:#0f2044;border-color:#cbd5e1;background:#f1f5f9}
+.ord-tab.active{background:#0f2044;border-color:#0f2044;color:#ffffff;font-weight:600;box-shadow:0 2px 6px rgba(15,32,68,.15)}
+.ord-card{background:#ffffff;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:all .2s}
+.ord-card:hover{border-color:#cbd5e1;box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.ord-card-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#f8fafc;border-bottom:1.5px solid #e2e8f0;flex-wrap:wrap;gap:8px}
 .ord-card-head-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.ord-number{font-size:.88rem;font-weight:700;color:#f0ece4;letter-spacing:.3px}
-.ord-date{font-size:.75rem;color:rgba(240,236,228,.3)}
-.ord-status-badge{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid}
-.ord-progress-wrap{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
-.ord-progress-track{height:3px;background:rgba(255,255,255,.06);border-radius:10px;margin-bottom:10px;position:relative}
-.ord-progress-fill{height:100%;background:linear-gradient(90deg,#c9a96e,#e8c98a);border-radius:10px;transition:width .6s ease}
+.ord-number{font-size:.92rem;font-weight:700;color:#0f2044;letter-spacing:.3px}
+.ord-date{font-size:.78rem;color:#64748b}
+.ord-status-badge{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1.5px solid}
+.ord-progress-wrap{padding:18px 20px 14px;background:#ffffff;border-bottom:1.5px solid #f1f5f9}
+.ord-progress-track{height:4px;background:#f1f5f9;border-radius:10px;margin-bottom:10px;position:relative}
+.ord-progress-fill{height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:10px;transition:width .6s ease}
 .ord-progress-steps{display:flex;justify-content:space-between}
 .ord-progress-step{display:flex;flex-direction:column;align-items:center;gap:6px}
-.ord-prog-dot{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:transparent;margin-top:-8px;position:relative;z-index:1}
-.ord-progress-step.done .ord-prog-dot{background:#c9a96e;border-color:#c9a96e;color:#0e0e0f}
-.ord-progress-step.current .ord-prog-dot{border-color:#c9a96e;background:rgba(201,169,110,.15)}
-.ord-prog-pulse{width:8px;height:8px;background:#c9a96e;border-radius:50%;animation:pulse 1.5s infinite}
+.ord-prog-dot{width:22px;height:22px;border-radius:50%;background:#ffffff;border:1.5px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent;margin-top:-9px;position:relative;z-index:1}
+.ord-progress-step.done .ord-prog-dot{background:#16a34a;border-color:#16a34a;color:#ffffff}
+.ord-progress-step.current .ord-prog-dot{border-color:#16a34a;background:#f0fdf4}
+.ord-prog-pulse{width:8px;height:8px;background:#16a34a;border-radius:50%;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
-.ord-prog-lbl{font-size:.68rem;color:rgba(240,236,228,.3);white-space:nowrap}
-.ord-progress-step.done .ord-prog-lbl,.ord-progress-step.current .ord-prog-lbl{color:rgba(201,169,110,.8)}
-.ord-items{padding:4px 0}
-.ord-item{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.ord-prog-lbl{font-size:.72rem;color:#94a3b8;white-space:nowrap;font-weight:500}
+.ord-progress-step.done .ord-prog-lbl,.ord-progress-step.current .ord-prog-lbl{color:#0f2044;font-weight:600}
+.ord-items{padding:4px 0;background:#ffffff}
+.ord-item{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f1f5f9}
 .ord-item:last-child{border-bottom:none}
-.ord-item-img{width:52px;height:68px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1px solid rgba(255,255,255,.07)}
+.ord-item-img{width:56px;height:72px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1.5px solid #e2e8f0}
 .ord-item-img img{width:100%;height:100%;object-fit:cover}
-.ord-item-no-img{width:100%;height:100%;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:rgba(240,236,228,.2)}
+.ord-item-no-img{width:100%;height:100%;background:#f8fafc;display:flex;align-items:center;justify-content:center;color:#94a3b8}
 .ord-item-info{flex:1}
-.ord-item-name{font-size:.88rem;font-weight:500;color:#f0ece4;line-height:1.3}
-.ord-item-meta{font-size:.75rem;color:rgba(240,236,228,.35);margin-top:3px}
-.ord-item-price{font-size:.88rem;font-weight:600;color:#f0ece4;flex-shrink:0}
-.ord-more-items{padding:8px 20px;font-size:.75rem;color:rgba(240,236,228,.3);text-align:center;background:rgba(255,255,255,.02)}
-.ord-resi-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:rgba(201,169,110,.05);border-top:1px solid rgba(201,169,110,.1);border-bottom:1px solid rgba(201,169,110,.1);gap:10px;flex-wrap:wrap}
-.ord-resi-info{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
-.ord-copy-btn{background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.2);border-radius:7px;padding:5px 12px;font-size:.75rem;color:#c9a96e;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;display:flex;align-items:center}
-.ord-copy-btn:hover{background:rgba(201,169,110,.2)}
-.ord-pay-alert{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(234,179,8,.06);border-top:1px solid rgba(234,179,8,.15);border-bottom:1px solid rgba(234,179,8,.15);flex-wrap:wrap;gap:12px}
-.ord-pay-btn{display:inline-flex;align-items:center;background:#facc15;border:none;border-radius:8px;padding:9px 18px;font-size:.82rem;font-weight:700;color:#0e0e0f;text-decoration:none;transition:background .2s;white-space:nowrap}
+.ord-item-name{font-size:.9rem;font-weight:600;color:#0f2044;line-height:1.3}
+.ord-item-meta{font-size:.78rem;color:#64748b;margin-top:3px}
+.ord-item-price{font-size:.92rem;font-weight:700;color:#0f2044;flex-shrink:0}
+.ord-more-items{padding:9px 20px;font-size:.78rem;color:#64748b;text-align:center;background:#f8fafc;border-top:1px solid #f1f5f9}
+.ord-resi-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fffbeb;border-top:1.5px solid #fde68a;border-bottom:1.5px solid #fde68a;gap:10px;flex-wrap:wrap}
+.ord-resi-info{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:.85rem}
+.ord-copy-btn{background:rgba(180,83,9,.08);border:1px solid rgba(180,83,9,.2);border-radius:7px;padding:6px 14px;font-size:.78rem;color:#b45309;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;display:flex;align-items:center}
+.ord-copy-btn:hover{background:rgba(180,83,9,.15)}
+.ord-pay-alert{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#fefce8;border-top:1.5px solid #fde047;border-bottom:1.5px solid #fde047;flex-wrap:wrap;gap:12px}
+.ord-pay-btn{display:inline-flex;align-items:center;background:#facc15;border:none;border-radius:8px;padding:9px 18px;font-size:.84rem;font-weight:700;color:#0e0e0f;text-decoration:none;transition:background .2s;white-space:nowrap}
 .ord-pay-btn:hover{background:#eab308;color:#0e0e0f}
-.ord-card-foot{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap;gap:12px}
+.ord-card-foot{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#f8fafc;border-top:1.5px solid #e2e8f0;flex-wrap:wrap;gap:12px}
 .ord-total{display:flex;align-items:center;gap:10px}
-.ord-total-lbl{font-size:.78rem;color:rgba(240,236,228,.35)}
-.ord-total-val{font-size:1rem;font-weight:700;color:#c9a96e;font-family:'Cormorant Garamond',serif}
+.ord-total-lbl{font-size:.82rem;color:#64748b}
+.ord-total-val{font-size:1.05rem;font-weight:700;color:#0f2044}
 .ord-actions{display:flex;gap:8px;flex-wrap:wrap}
-.ord-btn-review{display:inline-flex;align-items:center;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.25);border-radius:8px;padding:8px 16px;font-size:.8rem;font-weight:500;color:#c9a96e;text-decoration:none;transition:all .2s}
-.ord-btn-review:hover{background:rgba(201,169,110,.2);color:#c9a96e}
-.ord-btn-cancel-sm{display:inline-flex;align-items:center;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:500;color:#f87171;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
-.ord-btn-cancel-sm:hover{background:rgba(239,68,68,.18)}
-.ord-btn-detail{display:inline-flex;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 16px;font-size:.8rem;color:rgba(240,236,228,.6);text-decoration:none;transition:all .2s}
-.ord-btn-detail:hover{border-color:rgba(255,255,255,.25);color:#f0ece4}
-.ord-empty{text-align:center;padding:72px 20px;background:#151515;border:1px dashed rgba(255,255,255,.08);border-radius:14px}
+.ord-btn-review{display:inline-flex;align-items:center;background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:600;color:#16a34a;text-decoration:none;transition:all .2s}
+.ord-btn-review:hover{background:#16a34a;color:#ffffff;border-color:#16a34a}
+.ord-btn-cancel-sm{display:inline-flex;align-items:center;background:#fef2f2;border:1.5px solid #fecaca;border-radius:8px;padding:8px 14px;font-size:.8rem;font-weight:600;color:#dc2626;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.ord-btn-cancel-sm:hover{background:#ef4444;color:white;border-color:#ef4444}
+.ord-btn-receive-sm{display:inline-flex;align-items:center;background:#16a34a;border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:600;color:#ffffff;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 2px 6px rgba(22,163,74,.2);transition:all .2s}
+.ord-btn-receive-sm:hover{background:#15803d;color:#ffffff}
+.ord-btn-detail{display:inline-flex;align-items:center;background:#ffffff;border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:500;color:#0f2044;text-decoration:none;transition:all .2s}
+.ord-btn-detail:hover{border-color:#0f2044;color:#0f2044;background:#f8fafc}
+.ord-empty{text-align:center;padding:72px 20px;background:#ffffff;border:1.5px dashed #cbd5e1;border-radius:14px}
 .ord-empty-icon{font-size:3.5rem;margin-bottom:16px}
-.ord-empty-title{font-size:1.1rem;font-weight:600;color:rgba(240,236,228,.5);margin-bottom:8px}
-.ord-empty-sub{font-size:.85rem;color:rgba(240,236,228,.25);margin-bottom:24px}
+.ord-empty-title{font-size:1.15rem;font-weight:700;color:#0f2044;margin-bottom:8px}
+.ord-empty-sub{font-size:.88rem;color:#64748b;margin-bottom:24px}
 /* Modal */
-.ord-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center}
-.ord-modal{background:#1a1a1b;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:32px 28px;max-width:400px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.ord-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center}
+.ord-modal{background:#ffffff;border:1.5px solid #e2e8f0;border-radius:16px;padding:32px 28px;max-width:400px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.12)}
 .ord-modal-icon{font-size:2.5rem;margin-bottom:16px}
-.ord-modal-title{font-size:1.1rem;font-weight:700;color:#f0ece4;margin-bottom:10px}
-.ord-modal-sub{font-size:.85rem;color:rgba(240,236,228,.45);line-height:1.6;margin-bottom:24px}
+.ord-modal-title{font-size:1.1rem;font-weight:700;color:#0f2044;margin-bottom:10px}
+.ord-modal-sub{font-size:.85rem;color:#64748b;line-height:1.6;margin-bottom:24px}
 .ord-modal-actions{display:flex;gap:10px}
-.ord-modal-no{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:11px;font-size:.88rem;color:rgba(240,236,228,.6);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
-.ord-modal-no:hover{background:rgba(255,255,255,.1);color:#f0ece4}
+.ord-modal-no{flex:1;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:11px;font-size:.88rem;color:#64748b;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.ord-modal-no:hover{background:#f1f5f9;color:#0f2044}
 .ord-modal-yes{width:100%;background:#ef4444;border:none;border-radius:9px;padding:11px;font-size:.88rem;font-weight:600;color:white;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;transition:background .2s}
 .ord-modal-yes:hover{background:#dc2626}
+.ord-modal-receive-yes{width:100%;background:#16a34a;border:none;border-radius:9px;padding:11px;font-size:.88rem;font-weight:600;color:white;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.ord-modal-receive-yes:hover{background:#15803d}
+.ord-timer-badge{width:36px;height:36px;border-radius:50%;background:#fde047;display:flex;align-items:center;justify-content:center;color:#854d0e;font-size:1.1rem;flex-shrink:0}
+.ord-countdown-timer{background:#fef08a;padding:2px 8px;border-radius:6px;border:1px solid #fde047;color:#854d0e;letter-spacing:1px}
 </style>
 @endpush
 @push('scripts')
 <script>
+function initOrderCountdowns() {
+    const timers = document.querySelectorAll('.ord-countdown-timer');
+    if (!timers.length) return;
+
+    let hasExpired = false;
+
+    function tick() {
+        const now = Date.now();
+        timers.forEach(timer => {
+            const expiresStr = timer.getAttribute('data-expires');
+            if (!expiresStr) return;
+            const expiresTime = new Date(expiresStr).getTime();
+            const diff = expiresTime - now;
+
+            if (diff <= 0) {
+                timer.textContent = '00:00 (Waktu Habis)';
+                timer.classList.add('text-danger');
+                if (!hasExpired) {
+                    hasExpired = true;
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                }
+            } else {
+                const totalSeconds = Math.max(0, Math.floor(diff / 1000));
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                const minStr = String(minutes).padStart(2, '0');
+                const secStr = String(seconds).padStart(2, '0');
+                timer.textContent = `${minStr}:${secStr}`;
+            }
+        });
+    }
+
+    tick();
+    setInterval(tick, 1000);
+}
+document.addEventListener('DOMContentLoaded', initOrderCountdowns);
+
 function copyResi(resi) {
     navigator.clipboard.writeText(resi).then(() => {
         const btn = event.target.closest('button');
@@ -295,17 +387,31 @@ function copyResi(resi) {
 
 function confirmCancel(orderNumber, cancelUrl) {
     document.getElementById('cancelModalText').innerHTML =
-        `Pesanan <strong style="color:#f0ece4">${orderNumber}</strong> akan dibatalkan dan produk dikembalikan ke katalog.`;
+        `Pesanan <strong style="color:#0f2044">${orderNumber}</strong> akan dibatalkan dan produk dikembalikan ke katalog.`;
     document.getElementById('cancelModalForm').action = cancelUrl;
     document.getElementById('cancelModalIndex').style.display = 'flex';
+}
+
+function confirmReceive(orderNumber, receiveUrl) {
+    document.getElementById('receiveModalText').innerHTML =
+        `Apakah Anda benar-benar sudah menerima pesanan <strong style="color:#0f2044">${orderNumber}</strong>?<br><span style="font-size:.8rem;color:#64748b;display:block;margin-top:6px">Status pesanan akan diubah menjadi <strong>Pesanan Selesai</strong>.</span>`;
+    document.getElementById('receiveModalForm').action = receiveUrl;
+    document.getElementById('receiveModalIndex').style.display = 'flex';
 }
 
 document.getElementById('cancelModalIndex').addEventListener('click', function(e) {
     if (e.target === this) this.style.display = 'none';
 });
 
+document.getElementById('receiveModalIndex')?.addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+});
+
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') document.getElementById('cancelModalIndex').style.display = 'none';
+    if (e.key === 'Escape') {
+        document.getElementById('cancelModalIndex') && (document.getElementById('cancelModalIndex').style.display = 'none');
+        document.getElementById('receiveModalIndex') && (document.getElementById('receiveModalIndex').style.display = 'none');
+    }
 });
 </script>
 @endpush

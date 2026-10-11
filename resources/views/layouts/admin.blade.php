@@ -461,6 +461,254 @@
         color: var(--gold-dark) !important;
         border-color: var(--gold-bdr) !important;
     }
+
+    /* ══════════════════════════════════════════════════════════
+       LIGHT-THEME COMPATIBILITY LAYER
+       Semua view admin menggunakan warna dark-mode (#f0ece4 / rgba(240,236,228,...))
+       CSS berikut memetakan warna-warna tersebut ke palet light-theme yang tepat,
+       sehingga seluruh halaman (produk, kategori, brand, pesanan, ulasan, toko,
+       pencairan dana) tampil dengan kontras yang baik di background putih.
+    ══════════════════════════════════════════════════════════ */
+
+    /* Judul halaman (h4) yang menggunakan warna dark-mode */
+    [style*="color:#f0ece4"] { color: var(--text) !important; }
+
+    /* Teks placeholder / subtitle yang menggunakan rgba dark-mode */
+    [style*="color:rgba(240,236,228,.35)"],
+    [style*="color:rgba(240,236,228,.3)"],
+    [style*="color:rgba(240,236,228,.25)"],
+    [style*="color:rgba(240,236,228,.18)"] { color: var(--muted) !important; }
+
+    [style*="color:rgba(240,236,228,.45)"],
+    [style*="color:rgba(240,236,228,.4)"],
+    [style*="color:rgba(240,236,228,.5)"],
+    [style*="color:rgba(240,236,228,.6)"],
+    [style*="color:rgba(240,236,228,.65)"] { color: #555 !important; }
+
+    /* Border separator dark-mode */
+    [style*="border-top:1px solid rgba(255,255,255,.06)"],
+    [style*="border-bottom:1px solid rgba(255,255,255,.05)"],
+    [style*="border-bottom:1px solid rgba(255,255,255,.04)"],
+    [style*="border-bottom:1px solid rgba(255,255,255,.07)"] {
+        border-color: var(--border) !important;
+    }
+
+    /* Empty state rows */
+    [style*="color:rgba(240,236,228,.25)"],
+    td[style*="color:rgba(240,236,228,.25)"] { color: var(--faint) !important; }
+
+    /* Filter label warna dark-mode */
+    label[style*="color:rgba(240,236,228,.35)"] { color: var(--muted) !important; }
+
+    /* Gambar placeholder dark-mode */
+    div[style*="background:rgba(255,255,255,.04)"],
+    div[style*="background:rgba(255,255,255,.05)"] {
+        background: var(--bg3) !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    /* Link preview produk dark-mode */
+    a[style*="background:rgba(255,255,255,.05)"] {
+        background: var(--bg3) !important;
+        border-color: var(--border) !important;
+        color: var(--muted) !important;
+    }
+    a[style*="background:rgba(255,255,255,.05)"]:hover {
+        background: var(--border) !important;
+        color: var(--text) !important;
+    }
+
+    /* Pesanan: tombol "lihat toko" store link dark-mode */
+    a[style*="color:rgba(240,236,228,.5)"] { color: var(--muted) !important; }
+
+    /* Stat cards (digunakan di ulasan, toko, pencairan) */
+    .stat-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--gold);
+    }
+    .stat-card-icon {
+        font-size: 1.6rem;
+        color: var(--gold);
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+    .stat-card-label {
+        font-size: .7rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+    .stat-card-value {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 4px;
+        font-family: 'Playfair Display', serif;
+    }
+    .stat-card-sub { font-size: .72rem; color: var(--faint); }
+
+    /* Review cards: override warna dark-mode */
+    .rv-card {
+        background: var(--bg2) !important;
+        border: 1px solid var(--border) !important;
+    }
+    .rv-card:hover { border-color: var(--gold-bdr) !important; }
+    .rv-card-pending { border-color: #fde68a !important; }
+    .rv-card-head {
+        background: var(--bg3) !important;
+        border-bottom-color: var(--border) !important;
+    }
+    .rv-user-name { color: var(--text) !important; }
+    .rv-user-date { color: var(--faint) !important; }
+    .rv-avatar {
+        background: var(--gold-dim) !important;
+        border-color: var(--gold-bdr) !important;
+        color: var(--gold) !important;
+    }
+    .rv-product { border-bottom-color: var(--border) !important; }
+    .rv-comment {
+        color: var(--text) !important;
+        border-bottom-color: var(--border) !important;
+    }
+    .rv-photos { border-bottom-color: var(--border) !important; }
+    .rv-actions {
+        background: var(--bg3) !important;
+        border-top: 1px solid var(--border);
+    }
+    .rv-btn-approve {
+        background: #f0fdf4 !important;
+        border-color: #bbf7d0 !important;
+        color: #166534 !important;
+    }
+    .rv-btn-approve:hover { background: #dcfce7 !important; }
+    .rv-btn-hide {
+        background: var(--bg3) !important;
+        border-color: var(--border) !important;
+        color: var(--muted) !important;
+    }
+    .rv-btn-hide:hover { background: var(--border) !important; color: var(--text) !important; }
+    .rv-btn-delete {
+        background: #fef2f2 !important;
+        border-color: #fecaca !important;
+        color: #991b1b !important;
+    }
+    .rv-btn-delete:hover { background: #fee2e2 !important; }
+    .rv-label { color: var(--muted) !important; }
+
+    /* Empty state dark reviews */
+    div[style*="background:#151515"],
+    .rv-card[style*="background:#151515"] {
+        background: var(--bg2) !important;
+        border-color: var(--border) !important;
+    }
+
+    /* Rating count text di review */
+    span[style*="color:rgba(240,236,228,.4)"] { color: var(--muted) !important; }
+
+    /* Pesanan: mode pengawasan notice biru — tetap tapi koreksi teks gelap */
+    div[style*="background:rgba(96,165,250,.06)"] { background: #eff6ff !important; border-color: #bfdbfe !important; }
+    div[style*="background:rgba(96,165,250,.06)"] div[style*="color:#60a5fa"] { color: #1e40af !important; }
+    div[style*="background:rgba(96,165,250,.06)"] div[style*="color:rgba(240,236,228,.45)"] { color: #374151 !important; }
+    div[style*="background:rgba(96,165,250,.06)"] strong[style*="color:rgba(240,236,228,.7)"] { color: #111827 !important; }
+    span[style*="background:rgba(96,165,250,.08)"] {
+        background: #eff6ff !important;
+        border-color: #bfdbfe !important;
+        color: #1e40af !important;
+    }
+
+    /* Pesanan: lock info resi */
+    div[style*="background:rgba(255,255,255,.03)"][style*="border:1px solid rgba(255,255,255,.06)"] {
+        background: var(--bg3) !important;
+        border-color: var(--border) !important;
+        color: var(--muted) !important;
+    }
+
+    /* Pesanan & toko: foto produk placeholder */
+    div[style*="background:rgba(255,255,255,.03)"] { background: var(--bg3) !important; }
+
+    /* Catatan pesanan display box */
+    div[style*="white-space:pre-line"] {
+        background: var(--bg3) !important;
+        border-color: var(--border) !important;
+        color: var(--text) !important;
+    }
+
+    /* Order index: tabs */
+    .ord-tabs { display:flex;gap:4px;flex-wrap:wrap }
+    .ord-tab {
+        display:inline-flex;align-items:center;gap:7px;padding:8px 16px;
+        border-radius:8px;font-size:.82rem;color:var(--muted);text-decoration:none;
+        border:1px solid var(--border);background:transparent;transition:all .18s;
+    }
+    .ord-tab:hover { color:var(--text);border-color:var(--border2); }
+    .ord-tab.active { background:var(--gold-dim);border-color:var(--gold-bdr);color:var(--gold-dark);font-weight:500; }
+    .ord-tab-count { background:var(--bg3);color:inherit;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:10px; }
+    .ord-tab.active .ord-tab-count { background:rgba(212,168,67,.15); }
+    .ord-label { display:block;font-size:.68rem;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px; }
+
+    /* Pesanan: timeline */
+    .ord-timeline-step::before { background: var(--border) !important; }
+    .ord-tl-dot { border-color:var(--border) !important; background:var(--bg3) !important; color:var(--faint) !important; }
+    .ord-timeline-step.done .ord-tl-dot { border-color:var(--tl-color,#16a34a) !important; color:var(--tl-color,#16a34a) !important; background:#f0fdf4 !important; }
+    .ord-timeline-step.current .ord-tl-dot { border-color:var(--gold) !important; color:var(--gold-dark) !important; background:var(--gold-dim) !important; }
+    .ord-tl-label { color:var(--faint) !important; }
+    .ord-timeline-step.done .ord-tl-label { color:var(--text) !important; }
+    .ord-timeline-step.current .ord-tl-label { color:var(--gold-dark) !important; }
+    .ord-tl-time { color:var(--faint) !important; }
+
+    /* Pesanan: info rows kanan */
+    .ord-info-row { border-bottom-color: var(--border) !important; }
+    .ord-info-lbl { color:var(--muted) !important; }
+    .ord-info-val { color:var(--text) !important; }
+
+    /* Toko: border pagination dark */
+    div[style*="border-top:1px solid rgba(255,255,255,.06)"] {
+        border-top-color: var(--border) !important;
+    }
+
+    /* Produk: badge toko dark */
+    span[style*="background:rgba(201,169,110,.1)"][style*="color:#c9a96e"] {
+        background: var(--gold-dim) !important;
+        border-color: var(--gold-bdr) !important;
+        color: var(--gold-dark) !important;
+    }
+
+    /* Kondisi / status produk dark chips */
+    span[style*="color:#4ade80"][style*="background:rgba(34,197,94,.1)"] {
+        background: #f0fdf4 !important; color: #166534 !important;
+    }
+    span[style*="color:#facc15"][style*="background:rgba(234,179,8,.1)"] {
+        background: #fffbeb !important; color: #854d0e !important;
+    }
+    span[style*="color:#f87171"][style*="background:rgba(239,68,68,.1)"] {
+        background: #fef2f2 !important; color: #991b1b !important;
+    }
+    span[style*="color:#a78bfa"][style*="background:rgba(139,92,246,.1)"] {
+        background: #faf5ff !important; color: #6b21a8 !important;
+    }
+    span[style*="color:#60a5fa"][style*="background:rgba(59,130,246,.1)"] {
+        background: #eff6ff !important; color: #1e40af !important;
+    }
+
+    /* Pesanan index: status labels */
+    span[style*="color:#4ade80"] { color: #166534 !important; }
+    span[style*="color:#facc15"] { color: #854d0e !important; }
+
+    /* Hapus modal dark-mode — biarkan tetap dark karena itu overlay */
     </style>
     @stack('styles')
 </head>
@@ -503,14 +751,6 @@
             @php $newOrders = \App\Models\Order::where('status','paid')->count(); @endphp
             @if($newOrders > 0)
             <span class="adm-nav-badge red">{{ $newOrders }}</span>
-            @endif
-        </a>
-        <a href="{{ route('admin.reviews.index') }}"
-           class="adm-nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
-            <i class="bi bi-star-fill"></i> Ulasan
-            @php $pendingReviews = \App\Models\Review::where('is_approved',false)->count(); @endphp
-            @if($pendingReviews > 0)
-            <span class="adm-nav-badge red">{{ $pendingReviews }}</span>
             @endif
         </a>
 

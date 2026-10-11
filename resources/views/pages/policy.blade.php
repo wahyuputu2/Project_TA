@@ -121,10 +121,10 @@
 
     {{-- DISCLAIMER --}}
     <div class="pol-disclaimer">
-        <i class="bi bi-info-circle-fill me-2" style="color:#c9a96e;font-size:1.1rem"></i>
+        <i class="bi bi-info-circle-fill" style="color:#b45309;font-size:1.25rem;flex-shrink:0;margin-top:2px"></i>
         <div>
-            <div style="font-size:.85rem;font-weight:600;color:#f0ece4;margin-bottom:4px">Catatan Penting</div>
-            <div style="font-size:.8rem;color:rgba(240,236,228,.45);line-height:1.7">
+            <div style="font-size:.9rem;font-weight:700;color:#78350f;margin-bottom:6px">⚠️ Catatan Penting</div>
+            <div style="font-size:.85rem;color:#92400e;line-height:1.8">
                 Dengan melakukan pembelian di ThriftStore, kamu dianggap telah membaca dan menyetujui semua kebijakan di atas.
                 Kebijakan ini dapat berubah sewaktu-waktu. Jika ada pertanyaan, jangan ragu untuk menghubungi kami.
             </div>
@@ -239,16 +239,18 @@
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    background: #fffbeb;
-    border: 1.5px solid #fde68a;
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
     border-radius: 12px;
-    padding: 18px 20px;
+    padding: 20px 22px;
     margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(245,158,11,.12);
 }
 .pol-disclaimer-text {
-    font-size: .83rem;
-    color: #92400e;
-    line-height: 1.7;
+    font-size: .85rem;
+    color: #78350f;
+    line-height: 1.8;
+    font-weight: 500;
 }
 
 /* ── CONTACT BOX ── */
